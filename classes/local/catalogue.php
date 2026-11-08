@@ -40,6 +40,14 @@ final class catalogue {
             'repo' => 'devlms/moodle-paygw_chargily',
             'guide' => 'https://devlms.com/guides/chargily-moodle/',
         ],
+        'whop' => [
+            'region' => 'international',
+            'countries' => ['Worldwide'],
+            'currencies' => ['USD', 'EUR', 'GBP'],
+            'methods' => ['Cards', 'Apple Pay', 'Google Pay', 'PayPal'],
+            'repo' => 'devlms/moodle-paygw_whop',
+            'guide' => 'https://devlms.com/guides/whop-moodle/',
+        ],
     ];
 
     /**
