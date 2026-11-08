@@ -40,7 +40,7 @@ final class catalogue {
             'release' => '0.1.0',
             'version' => 2026110800,
             'url' => 'https://github.com/devlms/moodle-paygw_chargily/releases/download/v0.1.0/paygw_chargily-0.1.0.zip',
-            'sha256' => '',
+            'sha256' => 'ce1973da69dea8d5f3f536f9b613a99f6b24da4140239f82b498222bea9e0bb0',
             'repo' => 'https://github.com/devlms/moodle-paygw_chargily',
             'guide' => 'https://devlms.com/guides/chargily-moodle/',
         ],
