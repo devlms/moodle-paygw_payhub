@@ -17,10 +17,10 @@
 namespace paygw_payhub\local;
 
 /**
- * The gateways the hub knows how to install, each pinned to one release and its SHA-256 checksum.
+ * The gateways the hub knows: where each one's code lives on GitHub, and the facts shown before it is installed.
  *
- * A new gateway, or a new release of one, comes with a new release of the hub: nothing is fetched from a list
- * that could change under the site.
+ * Releases are not listed here: the newest release, its zip and its SHA-256 come from GitHub (see releases), so
+ * a new gateway release reaches every site without a new hub release. A new gateway still needs a hub release.
  *
  * @package    paygw_payhub
  * @copyright  2026 DevLMS <contact@devlms.com>
@@ -37,11 +37,7 @@ final class catalogue {
             'countries' => ['DZ'],
             'currencies' => ['DZD'],
             'methods' => ['EDAHABIA', 'CIB'],
-            'release' => '0.1.0',
-            'version' => 2026110800,
-            'url' => 'https://github.com/devlms/moodle-paygw_chargily/releases/download/v0.1.0/paygw_chargily-0.1.0.zip',
-            'sha256' => 'ce1973da69dea8d5f3f536f9b613a99f6b24da4140239f82b498222bea9e0bb0',
-            'repo' => 'https://github.com/devlms/moodle-paygw_chargily',
+            'repo' => 'devlms/moodle-paygw_chargily',
             'guide' => 'https://devlms.com/guides/chargily-moodle/',
         ],
     ];

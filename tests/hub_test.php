@@ -19,6 +19,7 @@ namespace paygw_payhub;
 use paygw_payhub\local\catalogue;
 use paygw_payhub\local\installer;
 use paygw_payhub\local\pricing;
+use paygw_payhub\local\releases;
 use paygw_payhub\tests\fake_provider;
 
 defined('MOODLE_INTERNAL') || die();
@@ -39,6 +40,7 @@ require_once(__DIR__ . '/fixtures/fake_provider.php');
  * @covers     \paygw_payhub\local\pricing
  * @covers     \paygw_payhub\local\installer
  * @covers     \paygw_payhub\local\catalogue
+ * @covers     \paygw_payhub\local\releases
  * @covers     \paygw_payhub\event\payment_completed
  */
 final class hub_test extends \advanced_testcase {
@@ -76,6 +78,7 @@ final class hub_test extends \advanced_testcase {
     protected function tearDown(): void {
         registry::$override = null;
         catalogue::$override = null;
+        releases::$http = null;
         parent::tearDown();
     }
 
@@ -132,21 +135,95 @@ final class hub_test extends \advanced_testcase {
         $this->assertSame(3, pricing::decimals('KWD'));
     }
 
-    public function test_installer_refuses_a_download_that_does_not_match_its_checksum(): void {
+    /**
+     * Make the catalogue know one test gateway, and GitHub answer with one release of it.
+     *
+     * @param string $zipbytes What the release zip contains.
+     * @param string|null $digest The SHA-256 GitHub reports, the zip's own when null.
+     */
+    private function github_release(string $zipbytes, ?string $digest = null): void {
+        catalogue::$override = ['payhubtestgw' => ['region' => 'local', 'countries' => [], 'currencies' => ['DZD'],
+            'methods' => [], 'repo' => 'devlms/moodle-paygw_payhubtestgw', 'guide' => '']];
+        releases::$http = fn($url) => json_encode([
+            ['draft' => true, 'tag_name' => 'v9.0', 'assets' => []],
+            ['draft' => false, 'prerelease' => true, 'tag_name' => 'v1.0', 'assets' => [[
+                'name' => 'paygw_payhubtestgw-1.0.zip',
+                'browser_download_url' => 'https://github.com/devlms/moodle-paygw_payhubtestgw/releases/download/v1.0/x.zip',
+                'digest' => 'sha256:' . ($digest ?? hash('sha256', $zipbytes)),
+            ]]],
+        ]);
+    }
+
+    /**
+     * A plugin zip whose root folder has another name: the installer renames it.
+     *
+     * @param string $component Component its version.php declares.
+     * @return string
+     */
+    private function plugin_zip(string $component): string {
+        $file = make_request_directory() . '/z.zip';
+        $zip = new \ZipArchive();
+        $zip->open($file, \ZipArchive::CREATE);
+        $zip->addFromString(
+            'moodle-paygw_payhubtestgw-1.0/version.php',
+            "<?php\ndefined('MOODLE_INTERNAL') || die();\n\$plugin->component = '$component';\n\$plugin->version = 1;\n"
+        );
+        $zip->close();
+        return file_get_contents($file);
+    }
+
+    public function test_the_newest_release_and_its_checksum_come_from_github(): void {
+        $bytes = $this->plugin_zip('paygw_payhubtestgw');
+        $this->github_release($bytes);
+        $release = releases::latest('payhubtestgw', 'devlms/moodle-paygw_payhubtestgw', true);
+        $this->assertSame('1.0', $release['release'], 'Drafts are skipped; a prerelease counts.');
+        $this->assertSame(hash('sha256', $bytes), $release['sha256']);
+        // Kept for an hour: GitHub is not asked again.
+        releases::$http = fn($url) => throw new \coding_exception('asked again');
+        $this->assertSame($release, releases::latest('payhubtestgw', 'devlms/moodle-paygw_payhubtestgw'));
+    }
+
+    public function test_installer_refuses_a_download_github_did_not_publish(): void {
+        global $CFG;
         $this->setAdminUser();
-        catalogue::$override = ['nosuchgw' => ['region' => 'local', 'countries' => ['DZ'], 'currencies' => ['DZD'],
-            'methods' => [], 'release' => '1.0', 'version' => 1, 'url' => 'https://example.com/x.zip',
-            'sha256' => hash('sha256', 'the real zip'), 'repo' => '', 'guide' => '']];
         if (!installer::can_install()) {
             $this->markTestSkipped('The gateway folder is not writable here.');
         }
+        $this->github_release($this->plugin_zip('paygw_payhubtestgw'));
         try {
-            installer::install('nosuchgw', fn($url) => 'a tampered zip');
+            installer::install('payhubtestgw', fn($url) => 'a tampered zip');
             $this->fail('Installed a file with the wrong checksum');
         } catch (\moodle_exception $e) {
             $this->assertSame('error:checksum', $e->errorcode);
         }
-        $this->assertArrayNotHasKey('nosuchgw', \core_component::get_plugin_list('paygw'));
+        // A zip that matches its checksum but holds another plugin is refused too.
+        $other = $this->plugin_zip('local_somethingelse');
+        $this->github_release($other);
+        try {
+            installer::install('payhubtestgw', fn($url) => $other);
+            $this->fail('Installed a zip of another plugin');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('error:wrongplugin', $e->errorcode);
+        }
+        $this->assertDirectoryDoesNotExist($CFG->dirroot . '/payment/gateway/payhubtestgw');
+    }
+
+    public function test_installer_unpacks_a_release_whose_checksum_matches(): void {
+        global $CFG;
+        $this->setAdminUser();
+        if (!installer::can_install()) {
+            $this->markTestSkipped('The gateway folder is not writable here.');
+        }
+        $bytes = $this->plugin_zip('paygw_payhubtestgw');
+        $this->github_release($bytes);
+        $target = $CFG->dirroot . '/payment/gateway/payhubtestgw';
+        try {
+            installer::install('payhubtestgw', fn($url) => $bytes);
+            $this->assertFileExists($target . '/version.php');
+        } finally {
+            remove_dir($target);
+            \core_component::reset();
+        }
     }
 
     public function test_supported_currencies_include_the_fee_currencies_for_conversion(): void {

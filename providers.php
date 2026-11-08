@@ -24,6 +24,7 @@
 
 use paygw_payhub\local\catalogue;
 use paygw_payhub\local\installer;
+use paygw_payhub\local\releases;
 use paygw_payhub\registry;
 
 require_once(__DIR__ . '/../../../config.php');
@@ -68,20 +69,22 @@ $canwrite = installer::can_install();
 $groups = ['local' => [], 'international' => []];
 foreach (catalogue::all() as $key => $entry) {
     $isinstalled = isset($installed[$key]);
+    // Only gateways that are not installed need the newest release; GitHub answers are kept for an hour.
+    $release = $isinstalled ? null : releases::latest($key, $entry['repo']);
     $groups[$entry['region']][] = [
         'name' => $key,
         'title' => $isinstalled ? get_string('pluginname', 'paygw_' . $key) : ucfirst($key),
         'countries' => implode(', ', $entry['countries']),
         'currencies' => implode(', ', $entry['currencies']),
         'methods' => implode(', ', $entry['methods']),
-        'release' => $entry['release'],
+        'release' => $release['release'] ?? '',
         'guide' => $entry['guide'],
-        'repo' => $entry['repo'],
+        'repo' => 'https://github.com/' . $entry['repo'],
         'installed' => $isinstalled,
         'enabled' => $isinstalled && isset($enabled[$key]),
-        'caninstall' => !$isinstalled && $canwrite,
-        'manual' => !$isinstalled && !$canwrite,
-        'url' => $entry['url'],
+        'caninstall' => !$isinstalled && $canwrite && $release,
+        'manual' => !$isinstalled && (!$canwrite || !$release),
+        'url' => $release['url'] ?? 'https://github.com/' . $entry['repo'] . '/releases',
         'actionurl' => $url->out(false),
         'sesskey' => sesskey(),
     ];

@@ -17,8 +17,9 @@
 namespace paygw_payhub\local;
 
 /**
- * Installs a gateway from the catalogue: download the pinned release, check its SHA-256, unpack it into
- * payment/gateway with Moodle's own code manager. Moodle's upgrade screen then finishes the install.
+ * Installs a gateway from the catalogue: download its newest release from GitHub, check the SHA-256 GitHub
+ * publishes for it and that the zip holds that gateway, then unpack it into payment/gateway with Moodle's own
+ * code manager. Moodle's upgrade screen then finishes the install.
  *
  * @package    paygw_payhub
  * @copyright  2026 DevLMS <contact@devlms.com>
@@ -54,30 +55,49 @@ final class installer {
         if (!self::can_install()) {
             throw new \moodle_exception('error:notwritable', 'paygw_payhub');
         }
-        if (empty($entry['sha256'])) {
-            throw new \moodle_exception('error:checksum', 'paygw_payhub', '', $name);
+        $release = releases::latest($name, $entry['repo'], true);
+        if (!$release) {
+            throw new \moodle_exception('error:norelease', 'paygw_payhub', '', $entry['repo']);
         }
-        $zip = $fetch ? $fetch($entry['url']) : download_file_content($entry['url'], null, null, false, 120, 20);
+        $zip = $fetch ? $fetch($release['url']) : download_file_content($release['url'], null, null, false, 120, 20);
         if (!is_string($zip) || $zip === '') {
-            throw new \moodle_exception('error:download', 'paygw_payhub', '', $entry['url']);
+            throw new \moodle_exception('error:download', 'paygw_payhub', '', $release['url']);
         }
-        // Nothing is unpacked unless the file is exactly the release the hub was built with.
-        if (!hash_equals($entry['sha256'], hash('sha256', $zip))) {
+        // Nothing is unpacked unless the file is exactly the one GitHub published for that release.
+        if (!hash_equals($release['sha256'], hash('sha256', $zip))) {
             throw new \moodle_exception('error:checksum', 'paygw_payhub', '', $name);
         }
         $path = make_request_directory() . '/' . $name . '.zip';
         file_put_contents($path, $zip);
         $manager = new \core\update\code_manager();
         $root = $manager->get_plugin_zip_root_dir($path);
-        if ($root === false) {
-            throw new \moodle_exception('error:download', 'paygw_payhub', '', $entry['url']);
+        if ($root === false || !self::is_component($path, $root, 'paygw_' . $name)) {
+            throw new \moodle_exception('error:wrongplugin', 'paygw_payhub', '', $name);
         }
         $target = \core_plugin_manager::instance()->get_plugintype_root('paygw');
         $files = $manager->unzip_plugin_file($path, $target, $name);
         if (!$files) {
-            throw new \moodle_exception('error:download', 'paygw_payhub', '', $entry['url']);
+            throw new \moodle_exception('error:download', 'paygw_payhub', '', $release['url']);
         }
         \core_component::reset();
         \core_plugin_manager::reset_caches();
+    }
+
+    /**
+     * Whether the zip's version.php declares the expected component, so a zip of something else is never unpacked.
+     *
+     * @param string $path
+     * @param string $root Root folder inside the zip.
+     * @param string $component
+     * @return bool
+     */
+    private static function is_component(string $path, string $root, string $component): bool {
+        $zip = new \ZipArchive();
+        if ($zip->open($path) !== true) {
+            return false;
+        }
+        $version = (string) $zip->getFromName($root . '/version.php');
+        $zip->close();
+        return (bool) preg_match('/\\$plugin->component\s*=\s*[\'"]' . preg_quote($component, '/') . '[\'"]\s*;/', $version);
     }
 }
