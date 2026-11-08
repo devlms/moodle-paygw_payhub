@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/devlms/moodle-paygw_payhub/actions/workflows/ci.yml/badge.svg)](https://github.com/devlms/moodle-paygw_payhub/actions/workflows/ci.yml)
 [![Maturity](https://img.shields.io/badge/maturity-alpha-orange)](version.php)
+[![Sponsor](https://img.shields.io/badge/sponsor-this%20plugin-2438ff)](https://devlms.com/sponsors/?plugin=paygw_payhub)
 
 A Moodle payment gateway that offers several payment gateways at one checkout. Learners choose how to pay, and each option can have its own price in its own currency, converted with rates you set.
 
@@ -32,6 +33,12 @@ Gateways are separate plugins. Install the ones you need on their own, or activa
 ## For gateway developers
 
 A gateway joins the hub by shipping one class, `\paygw_<name>\payhub\provider`, implementing `\paygw_payhub\provider`: its region, currencies, the methods an account turned on, and `start()`, which returns the provider's checkout URL. When the provider confirms the payment, the gateway calls `\paygw_payhub\hub::complete()` with the hub's reference and the amount and currency charged. See the Chargily gateway for a complete example.
+
+## Sponsors
+
+<!-- sponsors:start -->
+No sponsors yet. [Sponsor this plugin](https://devlms.com/sponsors/?plugin=paygw_payhub): your name or logo, with a link to your site, goes here and on [devlms.com/sponsors](https://devlms.com/sponsors/).
+<!-- sponsors:end -->
 
 ## Licence
 
