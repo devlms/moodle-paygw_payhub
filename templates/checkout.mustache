@@ -1,0 +1,57 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template paygw_payhub/checkout
+
+    Local and international ways to pay, each with its own price; each button goes to that provider.
+
+    Example context (json):
+    {
+        "description": "Enrolment in Introduction to Physics", "hasoptions": true, "action": "#", "sesskey": "x",
+        "hidden": [{"name": "itemid", "value": "3"}],
+        "groups": [
+            {"label": "Local payment", "options": [{"price": "DZD 2,500.00", "provider": "Chargily Pay",
+                "methods": [{"value": "chargily:edahabia", "label": "EDAHABIA"}, {"value": "chargily:cib", "label": "CIB"}]}]},
+            {"label": "International payment", "options": [{"price": "USD 19.00", "provider": "Card",
+                "methods": [{"value": "card:card", "label": "Visa or Mastercard"}]}]}
+        ]
+    }
+}}
+<div class="paygw-payhub">
+    {{#description}}<p class="paygw-payhub-what">{{description}}</p>{{/description}}
+    {{#hasoptions}}
+    <form method="post" action="{{action}}" class="paygw-payhub-groups">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        {{#hidden}}<input type="hidden" name="{{name}}" value="{{value}}">{{/hidden}}
+        {{#groups}}
+        <section class="paygw-payhub-group">
+            <h3 class="paygw-payhub-group-label">{{label}}</h3>
+            {{#options}}
+            <div class="paygw-payhub-option">
+                <p class="paygw-payhub-price">{{price}}</p>
+                <p class="paygw-payhub-provider">{{provider}}</p>
+                <div class="paygw-payhub-methods">
+                    {{#methods}}<button type="submit" name="choice" value="{{value}}" class="btn btn-outline-primary">{{label}}</button>{{/methods}}
+                </div>
+            </div>
+            {{/options}}
+        </section>
+        {{/groups}}
+    </form>
+    {{/hasoptions}}
+    {{^hasoptions}}<p class="alert alert-warning">{{#str}}nooptions, paygw_payhub{{/str}}</p>{{/hasoptions}}
+</div>

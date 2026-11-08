@@ -1,0 +1,84 @@
+/* Payment hub. Scoped to .paygw-payhub and .paygw-payhub-providers. */
+.paygw-payhub {
+    max-width: 40rem;
+}
+
+.paygw-payhub-what {
+    color: #495057;
+}
+
+.paygw-payhub-group {
+    margin-top: 1.25rem;
+}
+
+.paygw-payhub-group-label {
+    margin-bottom: .5rem;
+    color: #5b6269;
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.paygw-payhub-option {
+    display: grid;
+    grid-template-columns: minmax(8rem, auto) 1fr;
+    gap: .25rem 1.25rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid #dee2e6;
+}
+
+.paygw-payhub-price {
+    grid-row: span 2;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.paygw-payhub-provider {
+    margin: 0;
+    color: #5b6269;
+    font-size: .875rem;
+}
+
+.paygw-payhub-methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.paygw-payhub-list {
+    margin: 0 0 1.5rem;
+    padding: 0;
+    list-style: none;
+}
+
+.paygw-payhub-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem 0;
+    border-top: 1px solid #dee2e6;
+}
+
+.paygw-payhub-item p {
+    margin: 0;
+}
+
+.paygw-payhub-item-title {
+    font-weight: 700;
+}
+
+.paygw-payhub-item-meta,
+.paygw-payhub-item-links,
+.paygw-payhub-manual {
+    color: #5b6269;
+    font-size: .875rem;
+}
+
+.paygw-payhub-state.is-on {
+    color: #357a32;
+    font-weight: 600;
+}

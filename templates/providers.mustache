@@ -1,0 +1,59 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template paygw_payhub/providers
+
+    The gateways the hub knows, grouped local and international, with install and enable actions.
+
+    Example context (json):
+    {
+        "accountsurl": "#",
+        "groups": [{"label": "Local payment", "items": [{"name": "chargily", "title": "Chargily Pay", "countries": "DZ",
+            "currencies": "DZD", "methods": "EDAHABIA, CIB", "release": "0.1.0", "guide": "#", "repo": "#",
+            "installed": false, "enabled": false, "caninstall": true, "manual": false, "url": "#",
+            "actionurl": "#", "sesskey": "x"}]}]
+    }
+}}
+<div class="paygw-payhub-providers">
+    <p>{{#str}}providersintro, paygw_payhub, {{accountsurl}}{{/str}}</p>
+    {{#groups}}
+    <h3 class="paygw-payhub-group-label">{{label}}</h3>
+    <ul class="paygw-payhub-list">
+        {{#items}}
+        <li class="paygw-payhub-item">
+            <div>
+                <p class="paygw-payhub-item-title">{{title}}</p>
+                <p class="paygw-payhub-item-meta">{{methods}} · {{currencies}} · {{countries}}</p>
+                <p class="paygw-payhub-item-links"><a href="{{guide}}">{{#str}}guide, paygw_payhub{{/str}}</a> · <a href="{{repo}}">{{#str}}code, paygw_payhub{{/str}}</a></p>
+            </div>
+            <div class="paygw-payhub-item-state">
+                {{#enabled}}<span class="paygw-payhub-state is-on">{{#str}}state:enabled, paygw_payhub{{/str}}</span>{{/enabled}}
+                {{#installed}}{{^enabled}}
+                <form method="post" action="{{actionurl}}"><input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="name" value="{{name}}">
+                    <button type="submit" name="action" value="enable" class="btn btn-primary">{{#str}}enable, paygw_payhub{{/str}}</button></form>
+                {{/enabled}}{{/installed}}
+                {{#caninstall}}
+                <form method="post" action="{{actionurl}}"><input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="name" value="{{name}}">
+                    <button type="submit" name="action" value="install" class="btn btn-primary">{{#str}}activate, paygw_payhub, {{release}}{{/str}}</button></form>
+                {{/caninstall}}
+                {{#manual}}<p class="paygw-payhub-manual">{{#str}}manualinstall, paygw_payhub, {{url}}{{/str}}</p>{{/manual}}
+            </div>
+        </li>
+        {{/items}}
+    </ul>
+    {{/groups}}
+</div>
