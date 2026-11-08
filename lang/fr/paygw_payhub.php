@@ -62,3 +62,4 @@ $string['rates_help'] = 'Utilisés quand un prix est dans une devise et la passe
 $string['region:international'] = 'Paiement international';
 $string['region:local'] = 'Paiement local';
 $string['state:enabled'] = 'Activée';
+$string['event:paymentcompleted'] = 'Paiement effectué via le hub';

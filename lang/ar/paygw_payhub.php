@@ -62,3 +62,4 @@ $string['rates_help'] = 'تُستخدم عندما يكون السعر بعمل�
 $string['region:international'] = 'الدفع الدولي';
 $string['region:local'] = 'الدفع المحلي';
 $string['state:enabled'] = 'مفعّلة';
+$string['event:paymentcompleted'] = 'اكتمل الدفع عبر المركز';

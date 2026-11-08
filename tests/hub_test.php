@@ -39,6 +39,7 @@ require_once(__DIR__ . '/fixtures/fake_provider.php');
  * @covers     \paygw_payhub\local\pricing
  * @covers     \paygw_payhub\local\installer
  * @covers     \paygw_payhub\local\catalogue
+ * @covers     \paygw_payhub\event\payment_completed
  */
 final class hub_test extends \advanced_testcase {
     /** @var int enrol_fee instance */
@@ -97,8 +98,13 @@ final class hub_test extends \advanced_testcase {
         $this->assertNull(hub::complete($reference, 'paypal', 5.0, 'USD'), 'Less than asked is refused.');
         $this->assertNull(hub::complete($reference, 'paypal', 20.0, 'DZD'), 'Another currency is refused.');
         $this->assertNull(hub::complete('nope', 'paypal', 20.0, 'USD'));
+        $sink = $this->redirectEvents();
         $paymentid = hub::complete($reference, 'paypal', 20.0, 'USD');
         $this->assertNotNull($paymentid);
+        $done = array_values(array_filter($sink->get_events(), fn($e) => $e instanceof \paygw_payhub\event\payment_completed));
+        $this->assertCount(1, $done);
+        $this->assertSame('paypal', $done[0]->other['gateway']);
+        $sink->close();
         $this->assertTrue(is_enrolled(\context_course::instance($this->course->id), $this->student));
         $payment = $DB->get_record('payments', ['id' => $paymentid]);
         $this->assertSame('USD', $payment->currency);

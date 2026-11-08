@@ -155,6 +155,13 @@ final class hub {
         helper::deliver_order($row->component, $row->paymentarea, (int) $row->itemid, $paymentid, (int) $row->userid);
         $DB->update_record('paygw_payhub', (object) ['id' => $row->id, 'status' => 'paid', 'paymentid' => $paymentid,
             'timemodified' => time()]);
+        event\payment_completed::create([
+            'context' => \context_system::instance(),
+            'objectid' => $row->id,
+            'relateduserid' => $row->userid,
+            'other' => ['component' => $row->component, 'paymentarea' => $row->paymentarea, 'itemid' => (int) $row->itemid,
+                'amount' => $amount, 'currency' => $currency, 'gateway' => $gateway],
+        ])->trigger();
         return $paymentid;
     }
 

@@ -36,6 +36,7 @@ $string['error:nooption'] = 'This way to pay is not available for this item.';
 $string['error:notwritable'] = 'The payment gateway folder on the server is not writable, so gateways cannot be installed from here. Install them by hand.';
 $string['error:rates'] = 'Not a rate: "{$a}". Write one per line, such as USD DZD 135.5.';
 $string['error:unknowngateway'] = 'The hub does not know a gateway called {$a}.';
+$string['event:paymentcompleted'] = 'Payment completed through the hub';
 $string['feecurrencies'] = 'Fee currencies for conversion';
 $string['feecurrencies_desc'] = 'Currencies a price can be set in even when no gateway charges in them, because the account\'s rates convert them. Example: USD, EUR. Courses priced in USD can then be paid in DZD with a local card.';
 $string['gatewaydescription'] = 'Local and international payment at one checkout, each with its own price.';
