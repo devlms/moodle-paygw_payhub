@@ -15,7 +15,7 @@ Gateways are separate plugins. Install the ones you need on their own, or activa
 | Each gateway keeps its own keys in the payment account; the hub reads them, nothing is duplicated | Done |
 | Payments recorded in the currency actually charged, each delivered once | Done |
 | English, French and Arabic | Done |
-| Supported gateways | [Chargily Pay](https://github.com/devlms/moodle-paygw_chargily); more are added as they are released |
+| Supported gateways | [Chargily Pay](https://github.com/devlms/moodle-paygw_chargily), [SofizPay](https://github.com/devlms/moodle-paygw_sofizpay), [Whop](https://github.com/devlms/moodle-paygw_whop); more are added as they are released |
 
 ## Two ways to install
 
