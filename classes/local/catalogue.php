@@ -40,6 +40,14 @@ final class catalogue {
             'repo' => 'devlms/moodle-paygw_chargily',
             'guide' => 'https://devlms.com/guides/chargily-moodle/',
         ],
+        'sofizpay' => [
+            'region' => 'local',
+            'countries' => ['DZ'],
+            'currencies' => ['DZD'],
+            'methods' => ['CIB', 'EDAHABIA'],
+            'repo' => 'devlms/moodle-paygw_sofizpay',
+            'guide' => 'https://devlms.com/guides/sofizpay-moodle/',
+        ],
         'whop' => [
             'region' => 'international',
             'countries' => ['Worldwide'],
