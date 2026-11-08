@@ -18,7 +18,8 @@ namespace paygw_payhub\local;
 
 /**
  * Installs a gateway from the catalogue: download its newest release from GitHub, check the SHA-256 GitHub
- * publishes for it and that the zip holds that gateway, then unpack it into payment/gateway with Moodle's own
+ * publishes for it, the DevLMS release signature, and that the zip holds that gateway, then unpack it into
+ * payment/gateway with Moodle's own
  * code manager. Moodle's upgrade screen then finishes the install.
  *
  * @package    paygw_payhub
@@ -66,6 +67,11 @@ final class installer {
         // Nothing is unpacked unless the file is exactly the one GitHub published for that release.
         if (!hash_equals($release['sha256'], hash('sha256', $zip))) {
             throw new \moodle_exception('error:checksum', 'paygw_payhub', '', $name);
+        }
+        // And it must be signed with the DevLMS release key, so a release made by anyone else is refused.
+        $sig = $fetch ? $fetch($release['sigurl']) : download_file_content($release['sigurl'], null, null, false, 60, 20);
+        if (!is_string($sig) || !signature::valid($zip, $sig)) {
+            throw new \moodle_exception('error:signature', 'paygw_payhub', '', $name);
         }
         $path = make_request_directory() . '/' . $name . '.zip';
         file_put_contents($path, $zip);

@@ -17,7 +17,8 @@
 namespace paygw_payhub\local;
 
 /**
- * The newest release of a gateway, read from GitHub: the release zip and the SHA-256 GitHub publishes for it.
+ * The newest signed release of a gateway, read from GitHub: the release zip, the SHA-256 GitHub publishes for
+ * it, and its signature file.
  *
  * Prereleases count while a gateway has no stable release yet. Answers are kept for an hour, so the Gateways
  * page does not use up GitHub's limit for anonymous calls.
@@ -39,7 +40,7 @@ final class releases {
      * @param string $name Gateway name, such as chargily.
      * @param string $repo owner/name on GitHub.
      * @param bool $fresh Ask GitHub even if a recent answer is kept.
-     * @return array|null tag, release (version text), url, sha256
+     * @return array|null tag, release (version text), url, sha256, sigurl
      */
     public static function latest(string $name, string $repo, bool $fresh = false): ?array {
         $key = 'release_' . $name;
@@ -84,18 +85,23 @@ final class releases {
             if (!empty($release['draft'])) {
                 continue;
             }
-            foreach ($release['assets'] ?? [] as $asset) {
+            $assets = $release['assets'] ?? [];
+            $urls = array_column($assets, 'browser_download_url', 'name');
+            foreach ($assets as $asset) {
                 $digest = (string) ($asset['digest'] ?? '');
+                $sigurl = (string) ($urls[($asset['name'] ?? '') . '.sig'] ?? '');
                 if (
                     preg_match('/^paygw_' . preg_quote($name, '/') . '-[0-9A-Za-z.+-]+\.zip$/', (string) ($asset['name'] ?? ''))
                     && preg_match('/^sha256:([0-9a-f]{64})$/', $digest, $m)
                     && str_starts_with((string) ($asset['browser_download_url'] ?? ''), 'https://github.com/' . $repo . '/')
+                    && str_starts_with($sigurl, 'https://github.com/' . $repo . '/')
                 ) {
                     return [
                         'tag' => (string) $release['tag_name'],
                         'release' => ltrim((string) $release['tag_name'], 'v'),
                         'url' => (string) $asset['browser_download_url'],
                         'sha256' => $m[1],
+                        'sigurl' => $sigurl,
                     ];
                 }
             }
